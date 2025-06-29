@@ -35,29 +35,29 @@ def camera_loop(model, known_features, device):
                 print("❌ Görüntü alınamadı, çıkılıyor.")
                 break
 
-            # Konsolda tuş bekle (non-blocking)
+            
             if msvcrt.kbhit():
                 key = msvcrt.getch().lower()
                 if key == b'q':
                     print("🛑 Çıkılıyor...")
                     break
 
-                # RGB → PIL
+                
                 img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 pil_img = Image.fromarray(img_rgb)
 
-                # Özelliği çıkar ve GPU'ya taşı
+                
                 feat = extract_feature(model, pil_img).to(device)
 
                 if key == b'a':
-                    # Yeni araç kaydet
+                    
                     new_name = get_next_name()
                     torch.save(feat.cpu(), os.path.join(SAVE_DIR, new_name + ".pt"))
                     known_features[new_name] = feat.cpu()
                     print(f"[A] Yeni araç kaydedildi: {new_name}")
 
                 elif key == b's':
-                    # Mevcutlara karşı benzerliği hesapla
+                    
                     if not known_features:
                         print("[S] Henüz kayıtlı araç yok.")
                     else:
@@ -68,7 +68,7 @@ def camera_loop(model, known_features, device):
                                 best_sim, best_match = sim, name
                         print(f"[S] En iyi eşleşme → {best_match} ({best_sim:.2f})")
 
-                # küçük debounce
+                
                 torch.cuda.synchronize() if device.type=="cuda" else None
 
     except Exception:
@@ -81,17 +81,17 @@ def camera_loop(model, known_features, device):
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # Modeli yükle
+    
     model = LFFT().to(device)
     model.eval()
     print("Model yüklendi.")
 
-    # Kayıtlı özellikleri yükle
+    
     known_features = {}
     for fname in os.listdir(SAVE_DIR):
         if fname.endswith(".pt"):
             path = os.path.join(SAVE_DIR, fname)
             known_features[fname.replace(".pt", "")] = torch.load(path, map_location="cpu")
 
-    # Kamerayı başlat
+
     camera_loop(model, known_features, device)
