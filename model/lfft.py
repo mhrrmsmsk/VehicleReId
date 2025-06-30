@@ -20,7 +20,7 @@ class JSPM(nn.Module):
 class LFFT(nn.Module):
     def __init__(self):
         super().__init__()
-        # Burada doğrudan HuggingFace’den indirip uygun anahtarlarla yüklüyoruz
+
         self.vit = ViTModel.from_pretrained("google/vit-base-patch16-224-in21k")
         self.embed_dim = self.vit.config.hidden_size
 
@@ -28,19 +28,12 @@ class LFFT(nn.Module):
         self.jspm = JSPM()
 
     def forward(self, x):
-        # x: [B, 3, 224, 224] normalize edilmiş pixel_values
+        
         outputs = self.vit(pixel_values=x, output_attentions=True)
-        tokens = outputs.last_hidden_state       # [B, N, D]
-        attn_weights = outputs.attentions[-1]    # [B, H, N, N]
-
+        tokens = outputs.last_hidden_state       
+        attn_weights = outputs.attentions[-1]    
         B = tokens.size(0)
         tokens = self.norm(tokens)
-
-        # JSPM, [B, num_groups, D] dönecek şekilde implement edilmiş olmalı
         local_feats = self.jspm(tokens, attn_weights)
-
-        # CLS token global feature
         global_feat = tokens[:, 0]
-
-        # Final: [B, D + num_groups * D]
         return torch.cat([global_feat, local_feats.view(B, -1)], dim=1)
