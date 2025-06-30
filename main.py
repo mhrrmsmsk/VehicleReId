@@ -29,8 +29,8 @@ def camera_loop(model, known_features, device):
     print("   's'  → Mevcutlara karşı kontrol et")
     print("   'q'  → Çıkış")
 
-    # YOLOv8 modelini yükle (car, bus, truck vs. için)
-    yolo_model = YOLO("yolov8n.pt")  # En hafif model, istersen yolov8m.pt veya yolov8l.pt kullanabilirsin
+    
+    yolo_model = YOLO("yolov8n.pt") 
     allowed_classes = {"car", "truck", "bus", "motorcycle"}
 
     try:
@@ -46,7 +46,6 @@ def camera_loop(model, known_features, device):
                     print("🛑 Çıkılıyor...")
                     break
 
-                # Araç tespiti yap
                 results = yolo_model(frame)[0]
                 detections = results.boxes
                 names = results.names
@@ -91,7 +90,7 @@ def camera_loop(model, known_features, device):
                                 print("[S] Eşleşme bulunamadı!")
 
                     torch.cuda.synchronize() if device.type == "cuda" else None
-                    break  # Sadece ilk aracı işle
+                    break  
 
                 if not found_vehicle:
                     print("🚫 Araç tespit edilemedi!")
