@@ -2,7 +2,7 @@ import torch
 from torch import nn, optim
 from torchvision import transforms, datasets
 from torch.utils.data import DataLoader
-from model.lfft import LFFT  # senin daha önce oluşturduğun model
+from model.lfft import LFFT  
 from tqdm import tqdm
 import os
 
@@ -42,13 +42,13 @@ for epoch in range(EPOCHS):
     total_loss = 0
     for imgs, labels in tqdm(train_loader):
         imgs, labels = imgs.to(device), labels.to(device)
-        feats = model(imgs)  # output: [B, D]
+        feats = model(imgs)  
 
         # ID loss
-        logits = feats[:, :len(class_to_idx)]  # varsayım
+        logits = feats[:, :len(class_to_idx)] 
         loss_id = id_loss(logits, labels)
 
-        # Triplet loss (örnekleme ile yapılmalı)
+        # Triplet loss 
         a, p, n = feats[::3], feats[1::3], feats[2::3]
         if len(a) < 1:
             continue
